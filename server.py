@@ -41,7 +41,21 @@ def find_afterparties():
     sort = request.args.get('sort', '')
 
     url = 'https://app.ticketmaster.com/discovery/v2/events'
+
     payload = {'apikey': API_KEY}
+
+    if keyword:
+        payload['keyword'] = keyword
+    if postalcode:
+        payload['postalCode'] = postalcode
+    if radius:
+        payload['radius'] = radius
+    if unit:
+        payload['unit'] = unit
+    if sort:
+        payload['sort'] = sort
+
+    
 
     # TODO: Make a request to the Event Search endpoint to search for events
     #
@@ -55,11 +69,18 @@ def find_afterparties():
     #   search results
 
     
+    res = requests.get(url, params=payload)
+    print("//////////////////////////////////////////////")
+    print(res.url)
+    print("//////////////////////////////////////////////")
+    data = res.json()
+    if '_embedded' in data:
 
-    data = {'Test': ['This is just some test data'],
-            'page': {'totalElements': 1}}
-    events = []
+        events = data['_embedded']['events']
+    else:
+        events = []
 
+   
     return render_template('search-results.html',
                            pformat=pformat,
                            data=data,
@@ -75,11 +96,40 @@ def find_afterparties():
 def get_event_details(id):
     """View the details of an event."""
 
-    # TODO: Finish implementing this view function
+    url = 'https://app.ticketmaster.com/discovery/v2/events'
 
-    return render_template('event-details.html')
+    payload = {'apikey': API_KEY, 'id': id}
+
+    res = requests.get(url, params=payload)
+
+    print("//////////////////////////////////////////////")
+    print(f"EVENT ID {id}")
+    print("//////////////////////////////////////////////")
+
+    print("//////////////////////////////////////////////")
+    print(f"EVENT URL {res.url}")
+    print("//////////////////////////////////////////////")
+
+    data = res.json()
+
+    event = data['_embedded']['events'][0]
+    
+    
+    print("//////////////////////////////////////////////")
+    print(f"EVENT PIC {event['images'][0]['url']}")
+    print("//////////////////////////////////////////////")
+
+
+    print("//////////////////////////////////////////////")
+    print(f"EVENT URL2 {event['url']}")
+    print("//////////////////////////////////////////////")
+
+    return render_template('event-details.html', one_event = event)
+
 
 
 if __name__ == '__main__':
     app.debug = True
     app.run(host='0.0.0.0')
+
+
